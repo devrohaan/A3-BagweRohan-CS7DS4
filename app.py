@@ -10,7 +10,7 @@ import dash_bootstrap_components as dbc
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 app.title = 'Rohan Bagwe'
-
+server = app.server
 
 colors = {
     'background': '#111111',
