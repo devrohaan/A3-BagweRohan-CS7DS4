@@ -1,0 +1,6 @@
+TITLE = "CS7DS4 | Data Visualization 2020 | Assignment 3"
+NAME = "Name: Rohan Dilip Bagwe"
+TCD_ID = "TCDID: 19314431"
+COURSE = "Course Title: Computer Science - Intelligent Systems"
+MODULE = "Module: Data Visualization (CS7DS4)"
+DESC = "PLAYER3SIXTY° is a user-friendly football player analysis dashboard visualized using Python Dash Framework and a graphing library called Plotly. Dataset used for this analytical dashboard was made available by Kaggle. This dashboard compares top 1000 football players in the world. Various comparison criteria can be chosen from the dropdown options available"

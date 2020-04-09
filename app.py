@@ -1,243 +1,394 @@
-import base64
 import dash
+import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-import plotly.graph_objs as go
 import pandas as pd
-import pycountry
-import dash_bootstrap_components as dbc
+import plotly.graph_objs as go
+import plotly.express as px
 
+from Constants import TITLE, NAME, TCD_ID, COURSE, DESC, MODULE
+from visualization_helper import data_preprocess, get_dropdown_features, get_marker_list, get_country_list, \
+    get_player_attributes, get_player_skills, get_goalkeeper_attributes
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
-app.title = 'Rohan Bagwe'
+app.title = '19314431-CS7DS4-RohanBagwe'
 server = app.server
 
 colors = {
     'background': '#111111',
-    'text': '#7FDBFF'
+    'text': 'black'
 }
 
 # loading data
-data = pd.read_csv("data.csv")
-data["Flag"] = data["Flag"].str.replace(".org/", ".com/", case=False)
-data["Photo"] = data["Photo"].str.replace(".org/", ".com/", case=False)
-features = data.columns[1:-1]
-opts = [{'label': i, 'value': i} for i in features]
+data = pd.read_csv("data_1000_top_players.csv")
+
+# preprocess data
+clean_data = data_preprocess(data)
+
+# fetch Drop down choices
+features, opts = get_dropdown_features()
+
+# get list of countries
+country_list = get_country_list(clean_data)
+
+# fetch marker list
+marker_list = get_marker_list()
+
+# fetch radarplot categories
+player_attributes = get_player_attributes()
+player_skills, clean_data = get_player_skills(clean_data)
+goalkeeper_attributes = get_goalkeeper_attributes()
 
 app.layout = html.Div([
 
     html.Div([
 
         html.Div([
-            html.H1("1WERTYUI"),
-            html.P("1")
+            html.H4(className="title", children=TITLE),
+            html.P(className="self", children=NAME),
+            html.P(className="self", children=TCD_ID),
+            html.P(className="self", children=COURSE),
+            html.P(className="self", children=MODULE),
+            html.P(className="assignment_desc", children=DESC),
         ],
             style={'color': 'black',
-                   'border-radius': '10px',
+                   'border-radius': '1px',
                    'padding': '5px',
                    'backgroundColor': 'white',
-                   'margin-bottom': '5px'})
+                   'margin-bottom': '7px',
+                   'margin-right': '10px'})
     ],
-        style={'backgroundColor': '#d2d0d0', 'padding': '10px 10px'}
+        style={'backgroundColor': '#e6e2e2', 'padding': '10px 10px'}
     ),
 
     html.Div([
         html.P([
-            dcc.Dropdown(id='choosefeatre',
-                         options=opts,
-                         value='ID',
-                         style={'width': '100px',
-                                'fontSize': '20px',
-                                'padding-top': '10px',
-                                'display': 'inline-block'}),
 
-            dcc.Dropdown(id='choosefeatrex',
+            dcc.Dropdown(id='x-axis-feature',
                          options=opts,
-                         value='ID',
-                         style={'width': '100px',
-                                'fontSize': '20px',
-                                'padding-top': '10px',
-                                'display': 'inline-block'}),
+                         value='Age',
+                         style={'width': '300px',
+                                'fontSize': '15px',
+                                'padding-right': '4%',
+                                'color': 'black',
+                                'display': 'inline-block'
+                                }
+                         ),
 
             html.Img(
-                id="player_profile_picture",
-                style={'width': '70px'}),
+                id="logo",
+                src=app.get_asset_url('logo.png'),
+                style={'width': '250px'}),
 
-            dcc.Dropdown(id='choosefeatrexd',
+            dcc.Dropdown(id='y-axis-feature',
                          options=opts,
-                         value='ID',
-                         style={'width': '100px',
-                                'fontSize': '20px',
-                                'padding-top': '10px',
-                                'display': 'inline-block'}),
-
-            dcc.Dropdown(id='choosesfeatrexd',
-                         options=opts,
-                         value='ID',
-                         style={'width': '100px',
-                                'fontSize': '20px',
-                                'padding-top': '10px',
+                         value='Value (million, €)',
+                         style={'width': '300px',
+                                'fontSize': '15px',
+                                'padding-left': '4%',
+                                'color': 'black',
                                 'display': 'inline-block'}),
         ]),
-    ], style={'width': '100%', 'display': 'inline-block', 'padding': '0 20'}),
+    ], style={'width': '100%', 'display': 'inline-block', 'text-align': 'center', 'padding': '0 20'}),
 
     html.Div([
         dbc.Card(
             [
-                dbc.CardImg(id="card", src=data["Photo"][0], top=True, style={"width": "70px"}),
+                dbc.CardImg(id="player_info_card", top=True),
                 dbc.CardBody(
                     [
-                        html.H4("Card title", className="card-title"),
-                        html.P(
-                            "Some quick example text to build on the card title and "
-                            "make up the bulk of the card's content.",
-                            className="card-text",
-                        ),
+                        html.H4(id="player_name"),
+                        html.Img(id="player_national_flag", className="flag"),
+                        html.H2(id="player_summary", children="data"),
                     ]
                 ),
             ],
-            style={"width": "100%", 'display': 'inline-block', "background": "white"},
+            style={"padding-top": "20px", "text-align": "center", "width": "100%", 'display': 'inline-block',
+                   "background": "white"},
+        ),
+        dbc.Card(
+            [
+                dbc.CardBody(
+                    [
+                        html.Img(id="player_club_logo", className="club_logo",
+                                 style={"float": "left", "padding": "10px", "padding-left": "12vw"}),
+                        html.Label(id="player_club_name", className="player_club_info",
+                                   style={'display': 'inline-block'}),
+                        html.Label(id="player_club_joining", className="player_club_info"),
+                        html.Label(id="player_club_release_clause", className="player_club_info")
+                    ]
+                ),
+            ],
+            style={"padding-top": "20px", "width": "100%", 'display': 'inline-block', "background": "white"},
         ),
         dcc.Graph(
             id='fifa-scatter',
-            hoverData={'points': [{'default': 'L. Messi'}]},
+            hoverData={'points': [{'text': 'Cristiano Ronaldo'}]},
         ),
+        dcc.Slider(
+            id='fifa-scatter-player-count',
+            min=min(marker_list),
+            max=max(marker_list),
+            value=50,
+            step=None,
+            marks={str(count): str(count) for count in marker_list},
+        )
 
-    ], id="dashboard", style={'float': 'left','display': 'inline-block', 'width': '49%', 'margin-left': '13px'}),
+    ], id="dashboard", style={'float': 'left', 'display': 'inline-block', 'width': '49%', 'margin-left': '13px'}),
 
     html.Div([
-        dcc.Graph(id='player_stats',),
-        dcc.Graph(id='player_geo_locations',)
+        dcc.Graph(id='player-stats', ),
+        dcc.Graph(id='player-geo-locations', )
     ], style={'display': 'inline-block', 'width': '49%'}),
 
 ])
 
-data1 = data[:10]
-
 
 @app.callback(
     dash.dependencies.Output('fifa-scatter', 'figure'),
-    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
-def update_player_profile_scatter(hoverData):
-    print(hoverData)
-    trace_1 = go.Scatter(x=data1.Age,
-                         y=data1.Wage,
-                         name='AAPL HIGH',
-                         mode='markers',
-                         text=data1.Name,
-                         marker={
-                             'size': 20,
-                             'opacity': 0.5,
-                             'color': 'red',
-                             'line': {'width': 0.5, 'color': 'white'}
-                         }, )
-    layout = go.Layout(title='Players Profile',
-                       xaxis={
-                           'title': "Column name",
-                       },
-                       yaxis={
-                           'title': "Column name",
-                       },
-                       margin={'l': 40, 'b': 30, 't': 90, 'r': 90},
-                       hovermode='closest',
-                       #plot_bgcolor=colors['background'],
-                       #paper_bgcolor=colors['background'],
-                       #font={'color': colors['text']}
-                       )
-    fig = go.Figure(data=[trace_1], layout=layout)
+    [dash.dependencies.Input('x-axis-feature', 'value'),
+     dash.dependencies.Input('y-axis-feature', 'value'),
+     dash.dependencies.Input('fifa-scatter-player-count', 'value'), ])
+def update_players_profile_scatter(x_axis_value, y_axis_value, slider_value):
+    data = clean_data[:slider_value]
+    trace1 = [
+        dict(
+            x=data[data['Nationality'] == i][x_axis_value].sort_values(ascending=False),
+            y=data[data['Nationality'] == i][y_axis_value].sort_values(ascending=True),
+            text=data[data['Nationality'] == i]['Name'],
+            mode='markers',
+            opacity=0.7,
+            marker={
+                'size': 15,
+                'line': {'width': 0.5, 'color': 'white'}
+            },
+            name=i
+        ) for i in data.Nationality.unique()
+    ]
+    layout = dict(
+        title={"text": "Comparing Top " + str(
+            slider_value) + "/1000 players\' " + x_axis_value + " Vs. " + y_axis_value, "font": {"size": 15}},
+        xaxis={'type': 'linear', 'title': x_axis_value},
+        yaxis={'title': y_axis_value},
+        title_x=0.5,
+        margin={'l': 40, 'b': 40, 't': 60, 'r': 10},
+        legend={'x': 1, 'y': 0},
+        hovermode='closest',
+        height=490,
+    )
+    fig = go.Figure(data=trace1, layout=layout)
     return fig
 
 
-data.Nationality.replace("England", "United Kingdom", inplace=True)
-data.Nationality.replace("Wales", "United Kingdom", inplace=True)
-data.Nationality.replace("Scotland", "United Kingdom", inplace=True)
-data.Nationality.replace("Northern Ireland", "Ireland", inplace=True)
-data.Nationality.replace("Republic of Ireland", "Ireland", inplace=True)
-data.Nationality.replace("Korea Republic", "Korea, Democratic People's Republic of", inplace=True)
-data.Nationality.replace("China PR", "China", inplace=True)
-data.Nationality.replace("Russia", "Russian Federation", inplace=True)
-data.Nationality.replace("Ivory Coast", "Côte d'Ivoire", inplace=True)
-data.Nationality.replace("Czech Republic", "Czechia", inplace=True)
-data.Nationality.replace("DR Congo", "Congo, The Democratic Republic of the", inplace=True)
-data.Nationality.replace("Bosnia Herzegovina", "Bosnia and Herzegovina", inplace=True)
-
-data2 = data.copy()
-
-data2["Nationality_temp"] = data.Nationality
-for i, row in data2.iterrows():
-    if pycountry.countries.get(name=row.Nationality_temp) is not None:
-        data2.at[i, 'Nationality_temp'] = pycountry.countries.get(name=row.Nationality_temp).alpha_3
-        continue
-    if pycountry.countries.get(common_name=row.Nationality_temp) is not None:
-        data2.at[i, 'Nationality_temp'] = pycountry.countries.get(common_name=row.Nationality_temp).alpha_3
-        continue
-    if pycountry.countries.get(official_name=row.Nationality_temp) is not None:
-        data2.at[i, 'Nationality_temp'] = pycountry.countries.get(official_name=row.Nationality_temp).alpha_3
-        continue
-
-data3 = data2[:10]
 @app.callback(
-    dash.dependencies.Output('player_geo_locations', 'figure'),
-    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
-def update_player_geo_location(hoverData):
-    print(hoverData)
+    dash.dependencies.Output('player-geo-locations', 'figure'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData'),
+     dash.dependencies.Input('y-axis-feature', 'value'),
+     dash.dependencies.Input('fifa-scatter-player-count', 'value')])
+def update_player_geo_location(hoverData, y_axis_feature, slider_value):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    data = clean_data[:slider_value]
     trace1 = {
         "type": "scattergeo",
-        "text": data3.Nationality,
-        "locations": data3["Nationality_temp"],
-        "opacity": 0.8,
+        "locations": player_data.Nationality_ISO_alpha,
+        "opacity": 0.9,
+        "mode": "markers",
         "marker": {
-                 'size': 15, 'line': {'width': 0.5, 'color': 'white'}
-                },
+            'size': 10,
+            "color": "orange",
+            "symbol": "diamond",
+            "line": {
+                "color": 'black',
+                "width": 3}
+        },
+        "hoverinfo": 'text+name',
+        "name": player_data.Nationality.values[0],
+        "text": player_data.Name + ",<br>" + y_axis_feature + ": " + str(
+            player_data[y_axis_feature].values[0]) + ",<br>Country Average " + y_axis_feature + ": " + str(round(
+            data[data['Nationality'] == player_data.Nationality.values[0]][y_axis_feature].mean(), 2)),
+        "showlegend": False,
     }
+    trace2 = {
+        "type": "choropleth",
+        "z": data[y_axis_feature].tolist(),
+        "text": data.Nationality,
+        "hoverinfo": 'text',
+        "locations": data.Nationality_ISO_alpha,
+        "name": str(y_axis_feature),
+        "hoverlabel": {"bgcolor": "white", },
+        "colorbar": go.choropleth.ColorBar(title=str(y_axis_feature), xanchor="left"),
+        "colorscale": px.colors.sequential.Sunset,
+    }
+
     layout = {
+
         "geo": {
             "showframe": False,
-            "showcoastlines": False
+            "showcoastlines": True,
+            "showocean": True,
+            "landcolor": "#d8d8d8",
+            "oceancolor": "#cef6f7",
+            "projection": go.layout.geo.Projection(type='equirectangular'),
         },
-        "title": {"text": "Country with best players FIFA 19"},
-        "autosize": True
+
+        "title": {"text": "Player\'s Average " + str(y_axis_feature) + " in " + player_data.Nationality.values[
+            0] + " : " + str(round(
+            data[data['Nationality'] == player_data.Nationality.values[0]][y_axis_feature].mean(), 2)),
+                  "font": {"size": 15}, },
+        "margin": {'l': 40, 'b': 40, 't': 40, 'r': 10, },
+        "autosize": True,
     }
-    fig = go.Figure(data=[trace1], layout=layout)
+    fig = go.Figure(data=[trace1, trace2], layout=layout)
     return fig
 
 
 @app.callback(
-    dash.dependencies.Output('player_profile_picture', 'src'),
+    dash.dependencies.Output('player_info_card', 'src'),
     [dash.dependencies.Input('fifa-scatter', 'hoverData')])
-def updateImage(hoverData):
-    a = hoverData['points'][0]
-    return data.Photo[0]
+def render_player_info_card(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    photo_url = player_data['Photo'].values[0]
+    image_name = photo_url.split("/")[-1]
+    return app.get_asset_url('top_1000_players/' + image_name)
 
 
 @app.callback(
-    dash.dependencies.Output('player_stats', 'figure'),
+    dash.dependencies.Output('player_name', 'children'),
     [dash.dependencies.Input('fifa-scatter', 'hoverData')])
-def create_time_series(hoverData):
-    print(hoverData)
-    trace_1 = go.Scatterpolar(r=[14, 24,32,12,19],
-                          theta=['Month', 'year', 'we', 'wee', 'fer'],
-                          name='Deaths Due to Zymotic disease',
-                          fill='toself',
-                          line=dict(color='orange')
-                        )
+def render_player_name(hoverData):
+    player_name = hoverData['points'][0]['text']
+    return player_name
 
-    layout = go.Layout(title='Player Attributes',
-                       font_size=12,
-                       height=450,
-                       margin={'l': 0, 'b': 20, 't': 70, 'r': 0},
+
+@app.callback(
+    dash.dependencies.Output('player_national_flag', 'src'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
+def render_player_national_flag(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    photo_url = player_data['Flag'].values[0]
+    image_name = photo_url.split("/")[-1]
+    return app.get_asset_url('top_1000_flags/' + image_name)
+
+
+@app.callback(
+    dash.dependencies.Output('player_club_logo', 'src'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
+def render_player_club_logo(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    photo_url = player_data['Club Logo'].values[0]
+    image_name = photo_url.split("/")[-1]
+    return app.get_asset_url('top_1000_clubs/' + image_name)
+
+
+@app.callback(
+    dash.dependencies.Output('player_summary', 'children'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
+def render_player_summary(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    overall = player_data['Overall'].values[0]
+    Potential = player_data['Potential'].values[0]
+    wage = player_data['Wage'].values[0]
+    value = player_data['Value'].values[0]
+    description = "Overall Rating: {}  |  Potential:{}  |  Wage: {}  |  Value: {} ".format(str(overall), str(Potential),
+                                                                                           str(wage), str(value))
+    return description
+
+
+@app.callback(
+    dash.dependencies.Output('player_club_name', 'children'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
+def render_player_club_name(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    club_name = player_data['Club'].values[0]
+    if club_name == 0: club_name = "Missing"
+    jersey_number = int(player_data['Jersey Number'].values[0])
+    if jersey_number == 0: jersey_number = "Missing"
+    description = "Club Name: {} | Jersey Number: {}".format(str(club_name), str(jersey_number))
+    return description
+
+
+@app.callback(
+    dash.dependencies.Output('player_club_joining', 'children'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
+def render_player_joining(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    joining = player_data['Joined'].values[0]
+    if joining == 0: joining = "Missing"
+    contact_validity = player_data['Contract Valid Until'].values[0]
+    if contact_validity == 0: contact_validity = "Missing"
+    description = "Joining: {} | Contact Validity: {}".format(str(joining), str(contact_validity))
+    return description
+
+
+@app.callback(
+    dash.dependencies.Output('player_club_release_clause', 'children'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
+def render_player_release_clause(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    position = player_data['Position'].values[0]
+    if position == 0: position = "Missing"
+    release_clause = player_data['Release Clause'].values[0]
+    if release_clause == 0: release_clause = "Missing"
+    description = "Playing Position: {} | Release Clause: {}".format(str(position), str(release_clause))
+    return description
+
+
+@app.callback(
+    dash.dependencies.Output('player-stats', 'figure'),
+    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
+def render_player_attributes(hoverData):
+    player_name = hoverData['points'][0]['text']
+    player_data = clean_data.loc[clean_data['Name'] == player_name]
+    player_attributes_data_row = player_data[player_attributes]
+    player_skills_data_row = player_data[player_skills]
+    goalkeeper_attributes_data_row = player_data[goalkeeper_attributes]
+
+    trace_1 = go.Scatterpolar(r=player_attributes_data_row.values.tolist()[0],
+                              theta=player_attributes,
+                              name='Attributes',
+                              fill='toself',
+                              line=dict(color='orange')
+                              )
+
+    trace_2 = go.Scatterpolar(r=player_skills_data_row.values.tolist()[0],
+                              theta=player_skills,
+                              name='Skills',
+                              visible='legendonly',
+                              fill='toself',
+                              line=dict(color='blue')
+                              )
+
+    trace_3 = go.Scatterpolar(r=goalkeeper_attributes_data_row.values.tolist()[0],
+                              theta=goalkeeper_attributes,
+                              name='Goalkeeping',
+                              fill='toself',
+                              visible='legendonly',
+                              line=dict(color='green')
+                              )
+    layout = go.Layout(title=dict(text=player_name + '\'s Attributes', font=dict(size=15)),
+                       font_size=10,
+                       height=400,
+                       margin={'l': 0, 'b': 30, 't': 70, 'r': 0},
                        hovermode='closest',
                        polar=dict(
                            radialaxis=dict(
                                visible=True,
-                               range=[0, 200]
+                               range=[0, 100]
                            )
                        ),
                        showlegend=True,
-                    )
-    fig = go.Figure(data=[trace_1], layout=layout)
+                       )
+    fig = go.Figure(data=[trace_1, trace_2, trace_3], layout=layout)
     return fig
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, use_reloader=True)
