@@ -120,7 +120,7 @@ app.layout = html.Div([
                     ]
                 ),
             ],
-            style={"padding-top": "40px", "padding-bottom": "70px", "width": "100%", 'display': 'inline-block',
+            style={"padding-top": "40px", "padding-bottom": "66px", "width": "100%", 'display': 'inline-block',
                    "background": "white"},
         ),
         dcc.Graph(id='player-stats', ),
