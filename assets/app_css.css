@@ -81,7 +81,9 @@ p.self{
 	height:62px;
 	border:0px;
 }
-
+#player-stats{
+	#padding-top: 93px;
+}
 #react-select-2--value-item{
 	color: black;
 }

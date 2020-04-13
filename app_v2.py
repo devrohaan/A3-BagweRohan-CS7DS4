@@ -16,7 +16,7 @@ server = app.server
 
 colors = {
     'background': '#111111',
-    'text': '#404040'
+    'text': 'black'
 }
 
 # loading data
@@ -103,7 +103,7 @@ app.layout = html.Div([
                     ]
                 ),
             ],
-            style={"padding-top": "50px", "text-align": "center", "width": "100%", 'display': 'inline-block',
+            style={"padding-top": "20px", "text-align": "center", "width": "100%", 'display': 'inline-block',
                    "background": "white"},
         ),
         dbc.Card(
@@ -111,23 +111,16 @@ app.layout = html.Div([
                 dbc.CardBody(
                     [
                         html.Img(id="player_club_logo", className="club_logo",
-                                 style={"float": "left", "padding": "17px", "padding-left": "4vw"}),
+                                 style={"float": "left", "padding": "10px", "padding-left": "12vw"}),
                         html.Label(id="player_club_name", className="player_club_info",
                                    style={'display': 'inline-block'}),
                         html.Label(id="player_club_joining", className="player_club_info"),
-                        html.Label(id="player_club_release_clause", className="player_club_info"),
-                        html.Label(id="player_international_reputation", className="player_club_info")
+                        html.Label(id="player_club_release_clause", className="player_club_info")
                     ]
                 ),
             ],
-            style={"padding-top": "40px", "padding-bottom": "70px", "width": "100%", 'display': 'inline-block',
-                   "background": "white"},
+            style={"padding-top": "20px", "width": "100%", 'display': 'inline-block', "background": "white"},
         ),
-        dcc.Graph(id='player-stats', ),
-
-    ], id="dashboard", style={'float': 'left', 'display': 'inline-block', 'width': '40%', 'margin-left': '13px'}),
-
-    html.Div([
         dcc.Graph(
             id='fifa-scatter',
             hoverData={'points': [{'text': 'Cristiano Ronaldo'}]},
@@ -139,9 +132,14 @@ app.layout = html.Div([
             value=50,
             step=None,
             marks={str(count): str(count) for count in marker_list},
-        ),
+        )
+
+    ], id="dashboard", style={'float': 'left', 'display': 'inline-block', 'width': '49%', 'margin-left': '13px'}),
+
+    html.Div([
+        dcc.Graph(id='player-stats', ),
         dcc.Graph(id='player-geo-locations', )
-    ], style={'display': 'inline-block', 'width': '58%'}),
+    ], style={'display': 'inline-block', 'width': '49%'}),
 
 ])
 
@@ -167,16 +165,16 @@ def update_players_profile_scatter(x_axis_value, y_axis_value, slider_value):
             name=i
         ) for i in data.Nationality.unique()
     ]
-    title = "<b>Comparing Top " + str(slider_value) + "/1000 players\' " + x_axis_value + " Vs. " + y_axis_value +"</b>".upper()
     layout = dict(
-        title={"text": title, "font": {"size": 15}},
+        title={"text": "Comparing Top " + str(
+            slider_value) + "/1000 players\' " + x_axis_value + " Vs. " + y_axis_value, "font": {"size": 15}},
         xaxis={'type': 'linear', 'title': x_axis_value},
         yaxis={'title': y_axis_value},
+        title_x=0.5,
         margin={'l': 40, 'b': 40, 't': 60, 'r': 10},
         legend={'x': 1, 'y': 0},
-        font={'color': colors['text'], "family": "Roboto, sans-serif",},
         hovermode='closest',
-        height=413,
+        height=490,
     )
     fig = go.Figure(data=trace1, layout=layout)
     return fig
@@ -222,6 +220,7 @@ def update_player_geo_location(hoverData, y_axis_feature, slider_value):
         "colorbar": go.choropleth.ColorBar(title=str(y_axis_feature), xanchor="left"),
         "colorscale": px.colors.sequential.Sunset,
     }
+
     layout = {
 
         "geo": {
@@ -233,12 +232,11 @@ def update_player_geo_location(hoverData, y_axis_feature, slider_value):
             "projection": go.layout.geo.Projection(type='equirectangular'),
         },
 
-        "title": {"text": "<b>Average " + str(y_axis_feature) + " of a footballer in " + player_data.Nationality.values[
+        "title": {"text": "Player\'s Average " + str(y_axis_feature) + " in " + player_data.Nationality.values[
             0] + " : " + str(round(
-            data[data['Nationality'] == player_data.Nationality.values[0]][y_axis_feature].mean(), 2)) + "</b>",
+            data[data['Nationality'] == player_data.Nationality.values[0]][y_axis_feature].mean(), 2)),
                   "font": {"size": 15}, },
-        "margin": {'l': 40, 'b': 40, 't': 100, 'r': 10, },
-        "font": {'color': colors['text'], "family": "Roboto, sans-serif",},
+        "margin": {'l': 40, 'b': 40, 't': 40, 'r': 10, },
         "autosize": True,
     }
     fig = go.Figure(data=[trace1, trace2], layout=layout)
@@ -344,20 +342,6 @@ def render_player_release_clause(hoverData):
 
 
 @app.callback(
-    dash.dependencies.Output('player_international_reputation', 'children'),
-    [dash.dependencies.Input('fifa-scatter', 'hoverData')])
-def render_player_release_clause(hoverData):
-    player_name = hoverData['points'][0]['text']
-    player_data = clean_data.loc[clean_data['Name'] == player_name]
-    pref_foot = player_data['Preferred Foot'].values[0]
-    if pref_foot == 0: pref_foot = "Missing"
-    international_reput = player_data['International Reputation'].values[0]
-    if international_reput == 0: international_reput = "Missing"
-    description = "Preferred Foot: {} | International Reputation: {}".format(str(pref_foot), str(international_reput))
-    return description
-
-
-@app.callback(
     dash.dependencies.Output('player-stats', 'figure'),
     [dash.dependencies.Input('fifa-scatter', 'hoverData')])
 def render_player_attributes(hoverData):
@@ -389,10 +373,10 @@ def render_player_attributes(hoverData):
                               visible='legendonly',
                               line=dict(color='green')
                               )
-    layout = go.Layout(title=dict(text="<b>"+player_name + '\'s Stats'+"</b>", font=dict(size=15)),
-                       font_size=9.5,
-                       height=450,
-                       margin={'l': 10, 'b': 30, 't': 100, 'r': 0},
+    layout = go.Layout(title=dict(text=player_name + '\'s Attributes', font=dict(size=15)),
+                       font_size=10,
+                       height=400,
+                       margin={'l': 0, 'b': 30, 't': 70, 'r': 0},
                        hovermode='closest',
                        polar=dict(
                            radialaxis=dict(
@@ -400,7 +384,6 @@ def render_player_attributes(hoverData):
                                range=[0, 100]
                            )
                        ),
-                       font={'color': colors['text'], "family": "Roboto, sans-serif",},
                        showlegend=True,
                        )
     fig = go.Figure(data=[trace_1, trace_2, trace_3], layout=layout)
