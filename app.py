@@ -155,8 +155,8 @@ def update_players_profile_scatter(x_axis_value, y_axis_value, slider_value):
     data = clean_data[:slider_value]
     trace1 = [
         dict(
-            x=data[data['Nationality'] == i][x_axis_value].sort_values(ascending=False),
-            y=data[data['Nationality'] == i][y_axis_value].sort_values(ascending=True),
+            x=data[data['Nationality'] == i][x_axis_value],
+            y=data[data['Nationality'] == i][y_axis_value],
             text=data[data['Nationality'] == i]['Name'],
             mode='markers',
             opacity=0.7,
