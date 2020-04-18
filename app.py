@@ -63,7 +63,7 @@ app.layout = html.Div([
 
     html.Div([
         html.P([
-            html.Label(id="labelx", children="X-axis"),
+            html.Label(id="labelx", children="X-axis:"),
             dcc.Dropdown(id='x-axis-feature',
                          options=opts,
                          value='Age',
@@ -80,7 +80,7 @@ app.layout = html.Div([
                 src=app.get_asset_url('logo.png'),
                 style={'width': '250px'}),
             
-            html.Label(id="labely", children="Y-axis"),
+            html.Label(id="labely", children="Y-axis:"),
             dcc.Dropdown(id='y-axis-feature',
                          options=opts,
                          value='Value (million, €)',
