@@ -171,8 +171,8 @@ def update_players_profile_scatter(x_axis_value, y_axis_value, slider_value):
     title = "Choose comparison criteria above!<br><b>Comparing Top " + str(slider_value) + "/1000 players\' " + x_axis_value + " Vs. " + y_axis_value +"</b>".upper()
     layout = dict(
         title={"text": title, "font": {"size": 15}},
-        xaxis={'type': 'linear', 'title': x_axis_value},
-        yaxis={'title': y_axis_value},
+        xaxis={'type': 'linear', 'title': "<b>"+x_axis_value+"</b>"},
+        yaxis={'title': "<b>"+y_axis_value+"</b>"},
         margin={'l': 40, 'b': 40, 't': 60, 'r': 10},
         legend={'x': 1, 'y': 0},
         font={'color': colors['text'], "family": "Roboto, sans-serif",},
