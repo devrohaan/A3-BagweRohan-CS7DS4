@@ -63,7 +63,7 @@ app.layout = html.Div([
 
     html.Div([
         html.P([
-
+            html.Label(id="labelx", children="X-axis"),
             dcc.Dropdown(id='x-axis-feature',
                          options=opts,
                          value='Age',
@@ -79,13 +79,14 @@ app.layout = html.Div([
                 id="logo",
                 src=app.get_asset_url('logo.png'),
                 style={'width': '250px'}),
-
+            
+            html.Label(id="labely", children="Y-axis"),
             dcc.Dropdown(id='y-axis-feature',
                          options=opts,
                          value='Value (million, €)',
                          style={'width': '300px',
                                 'fontSize': '15px',
-                                'padding-left': '4%',
+                                'padding-left': '0%',
                                 'color': 'black',
                                 'display': 'inline-block'}),
         ]),
@@ -167,7 +168,7 @@ def update_players_profile_scatter(x_axis_value, y_axis_value, slider_value):
             name=i
         ) for i in data.Nationality.unique()
     ]
-    title = "<b>Comparing Top " + str(slider_value) + "/1000 players\' " + x_axis_value + " Vs. " + y_axis_value +"</b>".upper()
+    title = "Choose comparison criteria above!<br><b>Comparing Top " + str(slider_value) + "/1000 players\' " + x_axis_value + " Vs. " + y_axis_value +"</b>".upper()
     layout = dict(
         title={"text": title, "font": {"size": 15}},
         xaxis={'type': 'linear', 'title': x_axis_value},
